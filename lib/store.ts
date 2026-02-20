@@ -86,6 +86,8 @@ interface EditorStore {
   setExportSettings: (s: Partial<ExportSettings>) => void
   setIsExporting: (v: boolean) => void
   setExportProgress: (p: number) => void
+  exportDownloadUrl: string | null
+  setExportDownloadUrl: (url: string | null) => void
 
   // Computed
   getSelectedClip: () => VideoClip | null
@@ -127,6 +129,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   exportSettings: defaultExportSettings,
   isExporting: false,
   exportProgress: 0,
+  exportDownloadUrl: null,
 
   addClip: (clip) =>
     set((state) => {
@@ -213,6 +216,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     set((state) => ({ exportSettings: { ...state.exportSettings, ...s } })),
   setIsExporting: (v) => set({ isExporting: v }),
   setExportProgress: (p) => set({ exportProgress: p }),
+  setExportDownloadUrl: (url) => set({ exportDownloadUrl: url }),
 
   getSelectedClip: () => {
     const { clips, selectedClipId } = get()

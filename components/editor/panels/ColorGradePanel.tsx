@@ -3,30 +3,22 @@
 import { useEditorStore } from '@/lib/store'
 import { ColorGradeSettings, defaultColorGrade } from '@/lib/types'
 
+// Exposure lives in FilterSettings — these are color grade only
 const GRADE_CONTROLS: Array<{
   key: keyof ColorGradeSettings
   label: string
   min: number
   max: number
-  accent?: boolean
 }> = [
-  { key: 'exposure', label: 'EXPOSURE', min: -100, max: 100 },
   { key: 'shadows', label: 'SHADOWS', min: -100, max: 100 },
   { key: 'midtones', label: 'MIDTONES', min: -100, max: 100 },
   { key: 'highlights', label: 'HIGHLIGHTS', min: -100, max: 100 },
   { key: 'whites', label: 'WHITES', min: -100, max: 100 },
   { key: 'blacks', label: 'BLACKS', min: -100, max: 100 },
-  { key: 'vibrance', label: 'VIBRANCE', min: -100, max: 100, accent: true },
+  { key: 'vibrance', label: 'VIBRANCE', min: -100, max: 100 },
   { key: 'temperature', label: 'TEMPERATURE', min: -100, max: 100 },
   { key: 'tint', label: 'TINT', min: -100, max: 100 },
 ]
-
-// Override ColorGradeSettings to include exposure
-declare module '@/lib/types' {
-  interface ColorGradeSettings {
-    exposure?: number
-  }
-}
 
 export function ColorGradePanel() {
   const { getSelectedClip, updateClip } = useEditorStore()
@@ -101,8 +93,8 @@ export function ColorGradePanel() {
           </button>
         </div>
 
-        {GRADE_CONTROLS.map(({ key, label, min, max, accent }) => {
-          const value = (grade as any)[key] ?? 0
+        {GRADE_CONTROLS.map(({ key, label, min, max }) => {
+          const value = grade[key] ?? 0
           return (
             <div key={key}>
               <div className="flex items-center justify-between mb-1">

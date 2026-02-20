@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
 import { X, Download, CheckCircle } from 'lucide-react'
 import { useEditorStore } from '@/lib/store'
 import { ExportFPS, ExportFormat, ExportQuality, ExportResolution } from '@/lib/types'
@@ -24,54 +23,29 @@ export function ExportModal() {
     setExportSettings,
     isExporting,
     exportProgress,
+    exportDownloadUrl,
     setIsExporting,
     setExportProgress,
+    setExportDownloadUrl,
     duration,
   } = useEditorStore()
 
-  const [done, setDone] = useState(false)
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [])
-
   if (!showExportModal) return null
 
-  const startExport = () => {
-    setIsExporting(true)
-    setExportProgress(0)
-    setDone(false)
-    setDownloadUrl(null)
+  const done = exportProgress >= 100 && !isExporting && exportDownloadUrl !== null
 
-    // Simulate export progress
-    let progress = 0
-    timerRef.current = setInterval(() => {
-      progress += Math.random() * 8 + 2
-      if (progress >= 100) {
-        progress = 100
-        clearInterval(timerRef.current!)
-        setExportProgress(100)
-        setIsExporting(false)
-        setDone(true)
-        // Generate a dummy blob URL as a placeholder
-        const blob = new Blob(['NITROVID EXPORT PLACEHOLDER'], { type: 'text/plain' })
-        setDownloadUrl(URL.createObjectURL(blob))
-      } else {
-        setExportProgress(progress)
-      }
-    }, 200)
+  const startExport = () => {
+    // Reset any previous download
+    setExportDownloadUrl(null)
+    setExportProgress(0)
+    // VideoPreview listens for isExporting → true and runs MediaRecorder
+    setIsExporting(true)
   }
 
   const close = () => {
-    if (timerRef.current) clearInterval(timerRef.current)
     setIsExporting(false)
     setExportProgress(0)
-    setDone(false)
-    setDownloadUrl(null)
+    setExportDownloadUrl(null)
     setShowExportModal(false)
   }
 
@@ -149,11 +123,16 @@ export function ExportModal() {
                 </div>
               </div>
 
-              {/* Format */}
+              {/* Format — MediaRecorder only outputs WebM in browsers */}
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA] mb-2">
-                  FORMAT
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#A1A1AA]">
+                    FORMAT
+                  </p>
+                  <span className="text-[9px] text-[#A1A1AA]">
+                    Browser export outputs <span className="text-[#DFE104]">WebM</span> regardless
+                  </span>
+                </div>
                 <div className="flex gap-1">
                   {FORMAT_OPTIONS.map((fmt) => (
                     <button
@@ -284,16 +263,16 @@ export function ExportModal() {
                   EXPORT COMPLETE
                 </h3>
                 <p className="text-sm text-[#A1A1AA]">
-                  {res.label} · {exportSettings.fps}fps · {exportSettings.format.toUpperCase()}
+                  {res.label} · {exportSettings.fps}fps · WebM
                 </p>
               </div>
               <a
-                href={downloadUrl!}
-                download={`nitrovid_export.${exportSettings.format}`}
+                href={exportDownloadUrl!}
+                download="nitrovid_export.webm"
                 className="w-full h-12 bg-[#DFE104] text-black text-sm font-bold uppercase tracking-tighter flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-transform"
               >
                 <Download size={16} />
-                DOWNLOAD
+                DOWNLOAD WEBM
               </a>
               <button
                 onClick={close}
